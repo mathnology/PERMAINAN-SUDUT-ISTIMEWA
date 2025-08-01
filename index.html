@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Game Sudut Istimewa Trigonometri</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Poppins', sans-serif; }
+        
+        .draggable {
+            cursor: grab;
+            transition: all 0.3s ease;
+        }
+        
+        .draggable:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+        }
+        
+        .dragging {
+            opacity: 0.5;
+            transform: rotate(5deg);
+            cursor: grabbing;
+        }
+        
+        .drop-zone {
+            min-height: 60px;
+            border: 2px dashed rgba(255,255,255,0.3);
+            transition: all 0.3s ease;
+        }
+        
+        .drop-zone.drag-over {
+            border-color: #10b981;
+            background-color: rgba(16, 185, 129, 0.1);
+            transform: scale(1.02);
+        }
+        
+        .matched {
+            background-color: rgba(16, 185, 129, 0.3) !important;
+            border-color: #10b981 !important;
+            transform: scale(1.02);
+        }
+        
+        .angle-item {
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+        }
+        
+        .value-item {
+            background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+        }
+        
+        .pulse {
+            animation: pulse 0.5s ease-in-out;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
+        .shake {
+            animation: shake 0.5s ease-in-out;
+        }
+        
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-purple-600 via-blue-600 to-indigo-700 min-h-screen">
+    <div class="container mx-auto px-4 py-8">
+        <!-- Header -->
+        <div class="text-center mb-8">
+            <h1 class="text-4xl font-bold text-white mb-2">🎯 Game Sudut Istimewa</h1>
+            <p class="text-blue-100 text-lg">Cocokkan sudut dengan nilai trigonometrinya!</p>
+        </div>
+        
+        <!-- Reference Table -->
+        <div class="max-w-4xl mx-auto mb-8">
+            <div class="bg-white/10 backdrop-blur-sm rounded-xl p-6">
+                <h2 class="text-2xl font-bold text-white text-center mb-4">📊 Tabel Sudut Istimewa</h2>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-white">
+                        <thead>
+                            <tr class="border-b border-white/20">
+                                <th class="py-3 px-4 text-left">Sudut</th>
+                                <th class="py-3 px-4 text-center">sin</th>
+                                <th class="py-3 px-4 text-center">cos</th>
+                                <th class="py-3 px-4 text-center">tan</th>
+                            </tr>
+                        </thead>
+                        <tbody class="text-center">
+                            <tr class="border-b border-white/10 hover:bg-white/5">
+                                <td class="py-3 px-4 font-semibold text-yellow-300">0°</td>
+                                <td class="py-3 px-4">0</td>
+                                <td class="py-3 px-4">1</td>
+                                <td class="py-3 px-4">0</td>
+                            </tr>
+                            <tr class="border-b border-white/10 hover:bg-white/5">
+                                <td class="py-3 px-4 font-semibold text-yellow-300">30°</td>
+                                <td class="py-3 px-4">½</td>
+                                <td class="py-3 px-4">½√3</td>
+                                <td class="py-3 px-4">⅓√3</td>
+                            </tr>
+                            <tr class="border-b border-white/10 hover:bg-white/5">
+                                <td class="py-3 px-4 font-semibold text-yellow-300">45°</td>
+                                <td class="py-3 px-4">½√2</td>
+                                <td class="py-3 px-4">½√2</td>
+                                <td class="py-3 px-4">1</td>
+                            </tr>
+                            <tr class="border-b border-white/10 hover:bg-white/5">
+                                <td class="py-3 px-4 font-semibold text-yellow-300">60°</td>
+                                <td class="py-3 px-4">½√3</td>
+                                <td class="py-3 px-4">½</td>
+                                <td class="py-3 px-4">√3</td>
+                            </tr>
+                            <tr class="hover:bg-white/5">
+                                <td class="py-3 px-4 font-semibold text-yellow-300">90°</td>
+                                <td class="py-3 px-4">1</td>
+                                <td class="py-3 px-4">0</td>
+                                <td class="py-3 px-4">∞</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <p class="text-blue-100 text-sm text-center mt-4">💡 Pelajari tabel ini sebelum bermain!</p>
+            </div>
+        </div>
+
+        <!-- Game Stats -->
+        <div class="flex justify-center gap-6 mb-8">
+            <div class="bg-white/20 backdrop-blur-sm rounded-lg px-6 py-3 text-white">
+                <div class="text-sm opacity-80">Skor</div>
+                <div class="text-2xl font-bold" id="score">0</div>
+            </div>
+            <div class="bg-white/20 backdrop-blur-sm rounded-lg px-6 py-3 text-white">
+                <div class="text-sm opacity-80">Langkah</div>
+                <div class="text-2xl font-bold" id="moves">0</div>
+            </div>
+            <div class="bg-white/20 backdrop-blur-sm rounded-lg px-6 py-3 text-white">
+                <div class="text-sm opacity-80">Cocok</div>
+                <div class="text-2xl font-bold" id="matches">0/5</div>
+            </div>
+        </div>
+        
+        <!-- Game Board -->
+        <div class="max-w-6xl mx-auto">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+                <!-- Sudut (Draggable) -->
+                <div class="bg-white/10 backdrop-blur-sm rounded-xl p-6">
+                    <h3 class="text-xl font-bold text-white text-center mb-4">🎯 Sudut</h3>
+                    <div class="grid grid-cols-1 gap-3" id="anglesList">
+                        <!-- Angles will be generated by JavaScript -->
+                    </div>
+                </div>
+                
+                <!-- Nilai Trigonometri (Drop Zones) -->
+                <div class="bg-white/10 backdrop-blur-sm rounded-xl p-6">
+                    <h3 class="text-xl font-bold text-white text-center mb-4">📊 Nilai Trigonometri</h3>
+                    <div class="grid grid-cols-1 gap-3" id="valuesList">
+                        <!-- Values will be generated by JavaScript -->
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Control Buttons -->
+        <div class="text-center space-x-4">
+            <button onclick="startNewGame()" class="bg-green-500 hover:bg-green-600 text-white px-6 py-3 rounded-lg font-semibold transition-colors">
+                🎮 Game Baru
+            </button>
+            <button onclick="showHint()" class="bg-yellow-500 hover:bg-yellow-600 text-white px-6 py-3 rounded-lg font-semibold transition-colors">
+                💡 Petunjuk
+            </button>
+        </div>
+        
+        <!-- Hint Modal -->
+        <div id="hintModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden items-center justify-center z-50">
+            <div class="bg-white rounded-xl p-6 max-w-md mx-4">
+                <h3 class="text-xl font-bold mb-4 text-gray-800">📚 Sudut Istimewa Trigonometri</h3>
+                <div class="text-sm text-gray-600 space-y-2">
+                    <div><strong>0°:</strong> sin=0, cos=1, tan=0</div>
+                    <div><strong>30°:</strong> sin=½, cos=½√3, tan=⅓√3</div>
+                    <div><strong>45°:</strong> sin=½√2, cos=½√2, tan=1</div>
+                    <div><strong>60°:</strong> sin=½√3, cos=½, tan=√3</div>
+                    <div><strong>90°:</strong> sin=1, cos=0, tan=∞</div>
+                </div>
+                <button onclick="closeHint()" class="mt-4 bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg w-full">
+                    Tutup
+                </button>
+            </div>
+        </div>
+        
+        <!-- Success Modal -->
+        <div id="successModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden items-center justify-center z-50">
+            <div class="bg-white rounded-xl p-8 max-w-md mx-4 text-center">
+                <div class="text-6xl mb-4">🎉</div>
+                <h3 class="text-2xl font-bold mb-2 text-gray-800">Selamat!</h3>
+                <p class="text-gray-600 mb-4">Anda berhasil mencocokkan semua sudut istimewa!</p>
+                <div class="bg-gray-100 rounded-lg p-4 mb-4">
+                    <div class="text-sm text-gray-600">Skor Akhir</div>
+                    <div class="text-3xl font-bold text-green-600" id="finalScore">0</div>
+                </div>
+                <button onclick="startNewGame(); closeSuccess()" class="bg-green-500 hover:bg-green-600 text-white px-6 py-3 rounded-lg font-semibold w-full">
+                    Main Lagi
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Game data - sudut istimewa dan nilai trigonometrinya
+        const trigData = [
+            { angle: '0°', sin: '0', cos: '1', tan: '0' },
+            { angle: '30°', sin: '½', cos: '½√3', tan: '⅓√3' },
+            { angle: '45°', sin: '½√2', cos: '½√2', tan: '1' },
+            { angle: '60°', sin: '½√3', cos: '½', tan: '√3' },
+            { angle: '90°', sin: '1', cos: '0', tan: '∞' }
+        ];
+
+        let gameState = {
+            angles: [],
+            values: [],
+            matchedPairs: 0,
+            moves: 0,
+            score: 0,
+            draggedElement: null
+        };
+
+        function createGameItems() {
+            const angles = [];
+            const values = [];
+            const functions = ['sin', 'cos', 'tan'];
+            
+            // Gunakan semua 5 sudut istimewa
+            trigData.forEach((data, index) => {
+                // Sudut (draggable)
+                angles.push({
+                    id: `angle-${index}`,
+                    content: data.angle,
+                    matchId: index,
+                    matched: false
+                });
+                
+                // Nilai (drop zone) - pilih fungsi trigonometri secara acak
+                const func = functions[Math.floor(Math.random() * functions.length)];
+                values.push({
+                    id: `value-${index}`,
+                    content: `${func} = ${data[func]}`,
+                    matchId: index,
+                    matched: false,
+                    hasAngle: false
+                });
+            });
+            
+            return { angles: shuffleArray(angles), values: shuffleArray(values) };
+        }
+
+        function shuffleArray(array) {
+            const shuffled = [...array];
+            for (let i = shuffled.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+            }
+            return shuffled;
+        }
+
+        function renderBoard() {
+            const anglesList = document.getElementById('anglesList');
+            const valuesList = document.getElementById('valuesList');
+            
+            anglesList.innerHTML = '';
+            valuesList.innerHTML = '';
+            
+            // Render angles (draggable)
+            gameState.angles.forEach((angle, index) => {
+                if (!angle.matched) {
+                    const angleElement = document.createElement('div');
+                    angleElement.className = 'draggable angle-item text-white font-semibold p-4 rounded-lg text-center';
+                    angleElement.draggable = true;
+                    angleElement.innerHTML = `<div class="text-lg">${angle.content}</div>`;
+                    angleElement.dataset.matchId = angle.matchId;
+                    angleElement.dataset.type = 'angle';
+                    
+                    angleElement.addEventListener('dragstart', handleDragStart);
+                    angleElement.addEventListener('dragend', handleDragEnd);
+                    
+                    anglesList.appendChild(angleElement);
+                }
+            });
+            
+            // Render values (drop zones)
+            gameState.values.forEach((value, index) => {
+                const valueElement = document.createElement('div');
+                valueElement.className = `drop-zone value-item text-white font-semibold p-4 rounded-lg text-center ${value.matched ? 'matched' : ''}`;
+                valueElement.innerHTML = `
+                    <div class="text-sm">${value.content}</div>
+                    ${value.hasAngle ? `<div class="text-lg mt-2 text-yellow-300">${getAngleByMatchId(value.matchId)}</div>` : ''}
+                `;
+                valueElement.dataset.matchId = value.matchId;
+                valueElement.dataset.type = 'value';
+                
+                valueElement.addEventListener('dragover', handleDragOver);
+                valueElement.addEventListener('drop', handleDrop);
+                valueElement.addEventListener('dragenter', handleDragEnter);
+                valueElement.addEventListener('dragleave', handleDragLeave);
+                
+                valuesList.appendChild(valueElement);
+            });
+        }
+
+        function getAngleByMatchId(matchId) {
+            const angle = gameState.angles.find(a => a.matchId === matchId);
+            return angle ? angle.content : '';
+        }
+
+        function handleDragStart(e) {
+            gameState.draggedElement = e.target;
+            e.target.classList.add('dragging');
+        }
+
+        function handleDragEnd(e) {
+            e.target.classList.remove('dragging');
+            gameState.draggedElement = null;
+        }
+
+        function handleDragOver(e) {
+            e.preventDefault();
+        }
+
+        function handleDragEnter(e) {
+            e.preventDefault();
+            if (e.target.classList.contains('drop-zone') && !e.target.classList.contains('matched')) {
+                e.target.classList.add('drag-over');
+            }
+        }
+
+        function handleDragLeave(e) {
+            if (e.target.classList.contains('drop-zone')) {
+                e.target.classList.remove('drag-over');
+            }
+        }
+
+        function handleDrop(e) {
+            e.preventDefault();
+            e.target.classList.remove('drag-over');
+            
+            if (!gameState.draggedElement || e.target.classList.contains('matched')) {
+                return;
+            }
+            
+            const draggedMatchId = parseInt(gameState.draggedElement.dataset.matchId);
+            const dropZoneMatchId = parseInt(e.target.dataset.matchId);
+            
+            gameState.moves++;
+            
+            if (draggedMatchId === dropZoneMatchId) {
+                // Cocok!
+                const angleIndex = gameState.angles.findIndex(a => a.matchId === draggedMatchId);
+                const valueIndex = gameState.values.findIndex(v => v.matchId === dropZoneMatchId);
+                
+                gameState.angles[angleIndex].matched = true;
+                gameState.values[valueIndex].matched = true;
+                gameState.values[valueIndex].hasAngle = true;
+                
+                gameState.matchedPairs++;
+                gameState.score += 100;
+                
+                // Bonus skor berdasarkan efisiensi
+                const efficiency = Math.max(0, 15 - gameState.moves);
+                gameState.score += efficiency * 10;
+                
+                e.target.classList.add('matched', 'pulse');
+                
+                if (gameState.matchedPairs === 5) {
+                    setTimeout(showSuccess, 1000);
+                }
+            } else {
+                // Tidak cocok - shake effect
+                e.target.classList.add('shake');
+                gameState.draggedElement.classList.add('shake');
+                
+                setTimeout(() => {
+                    e.target.classList.remove('shake');
+                    if (gameState.draggedElement) {
+                        gameState.draggedElement.classList.remove('shake');
+                    }
+                }, 500);
+            }
+            
+            updateStats();
+            renderBoard();
+        }
+
+        function updateStats() {
+            document.getElementById('score').textContent = gameState.score;
+            document.getElementById('moves').textContent = gameState.moves;
+            document.getElementById('matches').textContent = `${gameState.matchedPairs}/5`;
+        }
+
+        function startNewGame() {
+            const gameItems = createGameItems();
+            gameState = {
+                angles: gameItems.angles,
+                values: gameItems.values,
+                matchedPairs: 0,
+                moves: 0,
+                score: 0,
+                draggedElement: null
+            };
+            
+            renderBoard();
+            updateStats();
+        }
+
+        function showHint() {
+            document.getElementById('hintModal').classList.remove('hidden');
+            document.getElementById('hintModal').classList.add('flex');
+        }
+
+        function closeHint() {
+            document.getElementById('hintModal').classList.add('hidden');
+            document.getElementById('hintModal').classList.remove('flex');
+        }
+
+        function showSuccess() {
+            document.getElementById('finalScore').textContent = gameState.score;
+            document.getElementById('successModal').classList.remove('hidden');
+            document.getElementById('successModal').classList.add('flex');
+        }
+
+        function closeSuccess() {
+            document.getElementById('successModal').classList.add('hidden');
+            document.getElementById('successModal').classList.remove('flex');
+        }
+
+        // Mulai game pertama kali
+        startNewGame();
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9685428e90393db7',t:'MTc1NDA1MDUxNi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
